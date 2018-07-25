@@ -50,7 +50,7 @@ class StackStaticArray:
 
 
 if __name__ == "__main__":
-    stack = StackIndex(10)
+    stack = StackStaticArray(10)
     print(stack.empty())
     stack.push('a')
     stack.push('b')
@@ -59,4 +59,4 @@ if __name__ == "__main__":
     print(stack)
     print(stack.pop())
     print(stack.empty())
-    #stack.pop()
+    #stack.pop() # stack underflow
