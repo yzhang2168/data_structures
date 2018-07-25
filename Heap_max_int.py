@@ -54,8 +54,9 @@ class HeapMax:
 
     def build_max_heap(self, arr):
         """
+        :modifies input array in place
         :running time: Theta(n)
-        :return: a max heap
+        :return: None
         """
         self.array = arr
         self.size = len(arr)
@@ -144,5 +145,5 @@ if __name__ == '__main__':
     print(my_heap)
     my_heap.insert(99)
     print(my_heap)
-    my_heap.change_key(0, -100)
+    my_heap.change_key(1, 100)
     print(my_heap)

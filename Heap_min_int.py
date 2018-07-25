@@ -48,9 +48,14 @@ class HeapMin:
             i = self.parent(i)
 
     def build_min_heap(self, array):
+        """
+        :modifies input array in place
+        :running time: Theta(n)
+        :return: None
+        """
         self.array = array
         self.size = len(self.array)
-        for i in range(len(array) // 2, -1, -1):
+        for i in range(len(array) // 2, -1, -1): # [self.size//2 ... 0]
             self.min_heapify(i)
 
     def get_min(self):

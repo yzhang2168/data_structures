@@ -23,7 +23,7 @@ class Node:
         return s
 
 
-class MinHeap:
+class MaxHeap:
     def __init__(self):
         self.array = []
         self.size = 0
@@ -41,21 +41,21 @@ class MinHeap:
     def right(self, i):
         return 2 * i + 2
 
-    def min_heapify(self, i):
+    def max_heapify(self, i):
         # aka sift_down
         left = self.left(i)
         right = self.right(i)
-        smallest = i
-        if left < self.size and self.array[left].get_value(self.sort_by) < self.array[i].get_value(self.sort_by):
-            smallest = left
-        if right < self.size and self.array[right].get_value(self.sort_by) < self.array[smallest].get_value(self.sort_by):
-            smallest = right
-        if smallest != i:
-            self.array[i], self.array[smallest] = self.array[smallest], self.array[i]
+        largest = i
+        if left < self.size and self.array[left].get_value(self.sort_by) > self.array[i].get_value(self.sort_by):
+            largest = left
+        if right < self.size and self.array[right].get_value(self.sort_by) > self.array[largest].get_value(self.sort_by):
+            largest = right
+        if largest != i:
+            self.array[i], self.array[largest] = self.array[largest], self.array[i]
             # after swapping, smallest's subtree may violate min heap property
-            self.min_heapify(smallest)
+            self.max_heapify(largest)
 
-    def build_min_heap(self, array):
+    def build_max_heap(self, array):
         """
         :modifies input array in place
         :running time: Theta(n)
@@ -64,18 +64,18 @@ class MinHeap:
         self.array = array
         self.size = len(self.array)
         for i in range(len(array) // 2, -1, -1): # [self.size//2 ... 0]
-            self.min_heapify(i)
+            self.max_heapify(i)
 
-    def extract_min(self):
+    def extract_max(self):
         result = self.array[0]
 
         self.array[0] = self.array[self.size - 1]
         self.size -= 1
         self.array.pop()
-        self.min_heapify(0)
+        self.max_heapify(0)
         return result
 
-    def get_min(self):
+    def get_max(self):
         return self.array[0]
 
     def insert(self, obj):
@@ -85,7 +85,7 @@ class MinHeap:
 
     def sift_up(self, i):
         # while i is not root
-        while i > 0 and self.array[self.parent(i)].get_value(self.sort_by) > self.array[i].get_value(self.sort_by):
+        while i > 0 and self.array[self.parent(i)].get_value(self.sort_by) < self.array[i].get_value(self.sort_by):
             self.array[self.parent(i)], self.array[i] = self.array[i], self.array[self.parent(i)]
             i = self.parent(i)
 
@@ -108,8 +108,8 @@ if __name__ == '__main__':
     object5 = Node('e', 50, 100)
     my_array = [object1, object2, object3, object4, object5]
 
-    print('\nbuild min heap from inserting objects, sort by field1')
-    my_heap1 = MinHeap()
+    print('\nbuild max heap from inserting objects, sort by field1')
+    my_heap1 = MaxHeap()
     my_heap1.set_sort_by('field1')
     my_heap1.insert(object1)
     my_heap1.insert(object2)
@@ -117,29 +117,28 @@ if __name__ == '__main__':
     my_heap1.insert(object4)
     my_heap1.insert(object5)
     print(my_heap1)
-    print('-' * 20)
 
-    print('\nbuild_min_heap_from_array, sort by field2')
-    my_heap2 = MinHeap()
-    my_heap2.set_sort_by('field2')
-    my_heap2.build_min_heap(my_array)
+    print('\nbuild_max_heap_from_array, sort by field1')
+    my_heap2 = MaxHeap()
+    my_heap2.set_sort_by('field1')
+    my_heap2.build_max_heap(my_array)
     print(my_heap2)
-    print('\nmin:')
-    print(my_heap2.get_min())
+    print('\nmax:')
+    print(my_heap2.get_max())
 
-    print('\nbuild_min_heap_from_array, sort by field3')
-    my_array3 = [object1, object2, object3, object4, object5]
+    print('\nbuild_max_heap_from_array, sort by field2')
+    my_array2 = [object1, object2, object3, object4, object5]
     print('starting array ID')
-    print(id(my_array3))
+    print(id(my_array2))
 
-    my_heap3 = MinHeap()
-    my_heap3.set_sort_by('field3')
-    my_heap3.build_min_heap(my_array3)
+    my_heap3 = MaxHeap()
+    my_heap3.set_sort_by('field2')
+    my_heap3.build_max_heap(my_array2)
     print(my_heap3)
-    print('resulting min heap ID')
+    print('resulting max heap ID')
     print(id(my_heap3.array))
-    print('\nextract_min()')
-    print(my_heap3.extract_min())
+    print('\nextract_max()')
+    print(my_heap3.extract_max())
     print('\nresulting heap')
     print(my_heap3)
     print('\nadd object5')
@@ -147,8 +146,8 @@ if __name__ == '__main__':
     print(my_heap3)
 
 
-    print('\nbuild min heap from inserting objects, sort by field3')
-    my_heap4 = MinHeap()
+    print('\nbuild max heap from inserting objects, sort by field3')
+    my_heap4 = MaxHeap()
     my_heap4.set_sort_by('field3')
     my_heap4.insert(object1)
     my_heap4.insert(object2)
