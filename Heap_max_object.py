@@ -2,7 +2,7 @@
 """
 Yun Zhang, yzhxdy@gmail.com
 2018
-min heap of objects
+max heap of objects
 compare objects by an attribute set up by set_sort_by()
 """
 
@@ -46,6 +46,8 @@ class MaxHeap:
         left = self.left(i)
         right = self.right(i)
         largest = i
+        # cannot use str(variable_name) as an argument
+        # because variable names are translated into machine after compilation
         if left < self.size and self.array[left].get_value(self.sort_by) > self.array[i].get_value(self.sort_by):
             largest = left
         if right < self.size and self.array[right].get_value(self.sort_by) > self.array[largest].get_value(self.sort_by):
