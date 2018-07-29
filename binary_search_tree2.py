@@ -58,10 +58,9 @@ class BinarySearchTree:
             self.root = self.nodes[0]
 
     def __in_order_recursion(self, node, result):
-        if node.left is not None:
+        if node is not None:
             self.__in_order_recursion(node.left, result)
-        result.append(node.key)
-        if node.right is not None:
+            result.append(node.key)
             self.__in_order_recursion(node.right, result)
 
     def in_order_traversal(self):
@@ -70,25 +69,35 @@ class BinarySearchTree:
             self.__in_order_recursion(self.root, result)
         return result
 
+    def __in_order_reverse_recursion(self, node, result):
+        if node is not None:
+            self.__in_order_reverse_recursion(node.right, result)
+            result.append(node.key)
+            self.__in_order_reverse_recursion(node.left, result)
+
+    def in_order_reverse_traversal(self):
+        result = []
+        if self.root is not None:
+            self.__in_order_reverse_recursion(self.root, result)
+        return result
+
+    def __pre_order_recursion(self, node, result):
+        if node is not None:
+            result.append(node.key)
+            self.__pre_order_recursion(node.left, result)
+            self.__pre_order_recursion(node.right, result)
+
     def pre_order_traversal(self):
         result = []
         if self.root is not None:
             self.__pre_order_recursion(self.root, result)
         return result
 
-    def __pre_order_recursion(self, node, result):
-        result.append(node.key)
-        if node.left is not None:
-            self.__pre_order_recursion(node.left, result)
-        if node.right is not None:
-            self.__pre_order_recursion(node.right, result)
-
     def __post_order_recursion(self, node, result):
-        if node.left is not None:
+        if node is not None:
             self.__post_order_recursion(node.left, result)
-        if node.right is not None:
             self.__post_order_recursion(node.right, result)
-        result.append(node.key)
+            result.append(node.key)
 
     def post_order_traversal(self):
         result = []
@@ -97,7 +106,7 @@ class BinarySearchTree:
         return result
 
     def __find_recursion(self, key, node):
-        if key == node.key:
+        if node is None or key == node.key:
             return node
         elif key < node.key:
             if node.left is not None:
@@ -114,10 +123,7 @@ class BinarySearchTree:
         """
         For a missing key, return the closest node
         """
-        if self.root is None:
-            return 'tree is empty'
-        else:
-            return self.__find_recursion(key, self.root)
+        return self.__find_recursion(key, self.root)
     '''
     def find2(self, key, node):
         # simplified, but requires 2 parameters
@@ -130,53 +136,94 @@ class BinarySearchTree:
             if node.right is not None:
                 return self.find2(key, node.right)
     '''
-    def range_search(self, low, high):
-        """
-        constraints: low and high within tree range
-        """
-        result = []
-        if self.root is not None:
-            node = self.find(low)
-            while node is not None and node.key <= high:
-                if node.key >= low:
-                    result.append(node.key)
-                    node = self.__next_largest(node)
-        return result
+    def max(self, node='root'):
+        if node == 'root':
+            node = self.root
+        if node is not None:
+            while node.right is not None:
+                node = node.right
+            return node.key
+        return node
 
-    def nearest_neighbors(self, key):
-        pass
+    def max_recursive(self, node):
+        if node is not None:
+            if node.right is None:
+                return node.key
+            return self.max_recursive(node.right)
+        return node
 
-    def __left_descendant(self, node):
-        if node.left is None:
-            return node
-        else:
-            return self.__left_descendant(node.left)
+    def min(self, node='root'):
+        if node == 'root':
+            node = self.root
+        if node is not None:
+            while node.left is not None:
+                node = node.left
+            return node.key
+        return self.root
+
+    def __left_ancestor(self, node):
+        if node.parent is not None:
+            if node.key > node.parent.key:
+                return node.parent.key
+            else:
+                return self.__left_ancestor(node.parent)
+        return None
 
     def __right_ancestor(self, node):
         # if node is the largest, return None
         if node.parent is not None:
             if node.key < node.parent.key:
-                return node.parent
+                return node.parent.key
             else:
                 return self.__right_ancestor(node.parent)
         return None
 
-    def __next_largest(self, node):
-        if node.right is not None:
-            return self.__left_descendant(node.right)
-        else:
-            return self.__right_ancestor(node)
-
-    def next_largest(self, key):
+    def successor(self, key):
         """
-        For users
-        constraints: key needs to be in the tree range
+        find smallest key > key
         """
         node = self.find(key)
-        if node.key == key:
-            return self.__next_largest(node)
-        else:
-            return node
+        if key == node.key:
+            if node.right is not None:
+                return self.min(node.right)
+            else:
+                # go up the tree and find the closest right ancestor
+                return self.__right_ancestor(node)
+        elif key < node.key:
+            return node.key
+        elif key > node.key:
+            return self.successor(node.key)
+
+    def predecessor(self, key):
+        """
+        find largest key < key
+        """
+        node = self.find(key)
+        if key == node.key:
+            if node.left is not None:
+                return self.max(node.left)
+            else:
+                return self.__left_ancestor(node)
+        elif key > node.key:
+            return node.key
+        elif key < node.key:
+            return self.predecessor(node.key)
+
+    def nearest_neighbors(self, key):
+        return self.predecessor(key), self.successor(key)
+
+    def range_search(self, low, high):
+        result = []
+        if self.root is not None:
+            # this will map low to a key in tree range
+            k = self.find(low).key
+            # if low > k, return []
+            if low <= k:
+                while k is not None and k <= high:
+                    if k >= low:
+                        result.append(k)
+                        k = self.successor(k)
+        return result
 
     def insert(self, key):
         new = Node(key)
@@ -199,62 +246,116 @@ class BinarySearchTree:
 
     def is_binary_search_tree(self):
         pass
+    '''
 
     def __str__(self):
         s = ''
         for node in self.nodes:
             s = s + str(node) + '\n'
         return s
-    '''
+
 
 if __name__ == '__main__':
     tree = BinarySearchTree()
     tree.read_from_console()
     print(tree)
-    print(tree.find(1))
-    print(tree.find(2))
     print(tree.find(3))
 
     print('\nfinding missing keys')
     print(tree.find(0))
-    print(tree.find(8))
     print(tree.find(3.5))
+    print(tree.find(8))
 
-    '''
-    print('\ninserting 0, 2.5, 3.5, 8')
+    print('\ninserting 0, 2.5, 3.5, 7.5')
     tree.insert(0)
     tree.insert(2.5)
     tree.insert(3.5)
-    tree.insert(8)
+    tree.insert(7.5)
 
     print('after insertions')
-    '''
     print('in order')
     print(tree.in_order_traversal())
+    print('in order reverse')
+    print(tree.in_order_reverse_traversal())
     print('pre order')
     print(tree.pre_order_traversal())
-    print()
     print('post order')
     print(tree.post_order_traversal())
 
-    print('\nrange_search(-2, 5)')
-    print(tree.range_search(-2, 5))
-    print('range_search(6, 8)')
-    print(tree.range_search(6, 8))
+    print('\nmax', tree.max())
+    print('max of left subtree', tree.max(tree.root.left))
+    print('max recursive', tree.max_recursive(tree.root))
+    print('max of left subtree', tree.max_recursive(tree.root.left))
 
-    print('\n0\'s next largest:', tree.next_largest(0))
-    print('3\'s next largest:', tree.next_largest(3))
-    print('4.5\'s next largest:', tree.next_largest(4.5))
-    print('8\'s next largest:', tree.next_largest(8))
+    print('\nmin', tree.min())
+    print('min of right subtree', tree.min(tree.root.right))
+
+    print('\nsuccesor: < min, missing key in range, no right child, == max, > max')
+    print('0\'s next largest:', tree.successor(0))
+    print('3\'s next largest:', tree.successor(3))
+    print('4.5\'s next largest:', tree.successor(4.5))
+    print('8\'s next largest:', tree.successor(8))
+    print('13\'s next largest:', tree.successor(13))
+    print('20\'s next largest:', tree.successor(20))
+    print('21\'s next largest:', tree.successor(21))
+
+    print('\npredecessor: < min, missing key in range, no left child, == min, > max')
+    print('0\'s previous largest:', tree.predecessor(0))
+    print('3\'s previous largest:', tree.predecessor(3))
+    print('3.5\'s previous largest:', tree.predecessor(3.5))
+    print('4\'s previous largest:', tree.predecessor(4))
+    print('9\'s previous largest:', tree.predecessor(9))
+    print('20\'s previous largest:', tree.predecessor(20))
+    print('21\'s previous largest:', tree.predecessor(21))
+
+    print('\nnearest neighbors')
+    print('0', tree.nearest_neighbors(0))
+    print('13', tree.nearest_neighbors(13))
+    print('20', tree.nearest_neighbors(20))
+
+    print('\nrange_search(-2, 5):', tree.range_search(-2, 5))
+    print('range_search(6, 18):', tree.range_search(6, 18))
+    print('range_search(0, 100):', tree.range_search(0, 100))
+    print('range_search(-30, -10):', tree.range_search(-30, -10))
+    print('range_search(30, 100):', tree.range_search(30, 100))
+
+
 
 '''
 input
-7
-4 1 2
-2 3 4
-6 5 6
-1 -1 -1
-3 -1 -1
-5 -1 -1
-7 -1 -1
+------
+11
+15 1 2
+6 3 4
+18 5 6
+3 7 8
+7 -1 9
+17 -1 -1
+20 -1 -1
+2 -1 -1
+4 -1 -1
+13 10 -1
+9 -1 -1
+        15
+      /    \
+     6     18
+    / \    / \
+   3   7  17 20
+  / \   \
+ 2   4  13
+        /
+       9
+       
+       
+10
+15 1 2
+6 3 4
+18 5 6
+3 -1 7
+7 -1 8
+17 -1 -1
+20 -1 -1
+4 -1 -1
+13 9 -1
+9 -1 -1
 '''
