@@ -302,17 +302,17 @@ class BinarySearchTree:
         return True
 
     def __is_BST_in_order_recursive(self, node):
+        """
+        uses a global variable
+        """
         if node is not None:
             global prev
             self.__is_BST_in_order_recursive(node.left)
             print(node)
             if prev is None:
                 prev = node.key
-                print('1st', prev)
             elif prev is not None and prev < node.key:
-                print('in here, prev =', prev)
                 prev = node.key
-                print('node.key', node.key)
             else:
                 return False
             self.__is_BST_in_order_recursive(node.right)
@@ -330,6 +330,35 @@ class BinarySearchTree:
             prev = None
             return self.__is_BST_in_order_recursive(self.root)
 
+    def __is_BST_in_order_util(self, node, prev):
+        """
+        prev is a reference to a mutable object
+        changes to the object itself are visible through all references to it
+        local names in call stack are not shared
+        """
+        if node is not None:
+            self.__is_BST_in_order_util(node.left, prev)
+            if not prev:
+                prev.append(node.key)
+            elif prev and prev[0] >= node.key:
+                return False
+            else:
+                prev[0] = node.key
+            self.__is_BST_in_order_util(node.right, prev)
+        return True
+
+    def is_BST_in_order_comparison(self):
+        """
+        no duplicate keys: left < root < right
+        check BST property by checking if in order traversal is in increasing order
+        passes a mutable object to another function
+        all changes made to the mutable object are seen through all references to it
+        """
+        if self.root is None:
+            return True
+        else:
+            previous = []
+            return self.__is_BST_in_order_util(self.root, previous)
 
     def __str__(self):
         s = ''
@@ -341,10 +370,11 @@ class BinarySearchTree:
 if __name__ == '__main__':
     tree = BinarySearchTree()
     tree.read_from_console()
-    print(tree)
+    #print(tree)
     #print('\nchecking BST property:', tree.is_BST_recursive(tree.root))
     #print('\nchecking BST property:', tree.is_BST_search_nodes())
     print('checking BST property:', tree.is_BST_in_order())
+    print('testing is_BST_in_order_comparison:', tree.is_BST_in_order_comparison())
 
     print('\nfinding existing key', tree.find(3))
 
