@@ -2,7 +2,7 @@
 """
 Yun Zhang, yzhxdy@gmail.com
 July 2018
-class for BinarySearchTree
+class for BinarySearchTree, tree may not be balanced
 class for Node: has key and 3 pointers (parent, left child and right child)
 """
 import sys
@@ -234,6 +234,9 @@ class BinarySearchTree:
         return result
 
     def insert(self, key):
+        """
+        does not rebalance the tree
+        """
         new = Node(key)
         # empty tree
         if self.root is None:
@@ -271,6 +274,24 @@ class BinarySearchTree:
             return False
         return True
 
+    def __is_BST_min_max_util(self, node, mini, maxi):
+        if node is None:
+            return True
+        if node.key < mini or node.key >= maxi:
+            # node.key <= maxi: duplicate key should be the right child, not left child
+            return False
+        return self.__is_BST_min_max_util(node.left, mini, node.key) and \
+               self.__is_BST_min_max_util(node.right, node.key, maxi)
+
+    def is_BST_min_max(self):
+        """
+        allows duplicate keys: left < node <= right
+        """
+        mini = -9223372036854775807
+        maxi = 9223372036854775807
+        # does not work for root = 2147483647
+        return self.__is_BST_min_max_util(self.root, mini, maxi)
+
     def __find_BST(self, key, node, i, visited):
         if node is None:
             return node
@@ -300,7 +321,66 @@ class BinarySearchTree:
                     print(self.nodes[i].key, 'find() returns None')
                     return False
         return True
+    '''
+    def __is_BST_in_order_recursive(self, node):
+        """
+        uses a global variable
+        """
+        if node is not None:
+            global prev
+            self.__is_BST_in_order_recursive(node.left)
+            print(node)
+            if prev is None:
+                prev = node.key
+            elif prev is not None and prev < node.key:
+                prev = node.key
+            else:
+                return False
+            self.__is_BST_in_order_recursive(node.right)
+        return True
 
+    def is_BST_in_order(self):
+        """
+        no duplicate keys: left < root < right
+        check BST property by checking if in order traversal is in increasing order
+        """
+        if self.root is None:
+            return True
+        else:
+            global prev
+            prev = None
+            return self.__is_BST_in_order_recursive(self.root)
+
+    def __is_BST_in_order_util(self, node, prev):
+        """
+        prev is a reference to a mutable object
+        changes to the object itself are visible through all references to it
+        local names in call stack are not shared
+        """
+        if node is not None:
+            self.__is_BST_in_order_util(node.left, prev)
+            if not prev:
+                prev.append(node.key)
+            elif prev and prev[0] >= node.key:
+                return False
+            else:
+                prev[0] = node.key
+            self.__is_BST_in_order_util(node.right, prev)
+        return True
+
+    def is_BST_in_order_comparison(self):
+        """
+        no duplicate keys: left < root < right
+        check BST property by checking if in order traversal is in increasing order
+        passes a mutable object to another function
+        all changes made to the mutable object are seen through all references to it
+        """
+        if self.root is None:
+            return True
+        else:
+            previous = []
+            return self.__is_BST_in_order_util(self.root, previous)
+    '''
     def __str__(self):
         s = ''
         for node in self.nodes:
@@ -312,10 +392,11 @@ if __name__ == '__main__':
     tree = BinarySearchTree()
     tree.read_from_console()
     #print(tree)
-    #print('\nchecking BST property:', tree.is_BST_recursive(tree.root))
-    #print('\nchecking BST property:', tree.is_BST_search_nodes())
-    print('checking BST property:', tree.is_BST_in_order())
-    print('testing is_BST_in_order_comparison:', tree.is_BST_in_order_comparison())
+    print('\nchecking BST property - recursive:', tree.is_BST_recursive(tree.root))
+    print('nchecking BST property - search nodes:', tree.is_BST_search_nodes())
+    print('checking BST property - in order comparison:', tree.is_BST_in_order())
+    print('checking BST property - in_order_comparison:', tree.is_BST_in_order_comparison())
+    print('checking BST property - search within range of ancestors', tree.is_BST_min_max())
 
     print('\nfinding existing key', tree.find(3))
 
@@ -416,4 +497,27 @@ input
 4 -1 -1
 13 9 -1
 9 -1 -1
+
+----------------
+11
+15 1 2
+6 4 3
+18 5 6
+3 7 8
+7 -1 9
+17 -1 -1
+20 -1 -1
+2 -1 -1
+4 -1 -1
+13 10 -1
+9 -1 -1
+        15
+      /    \
+     6     18
+    / \    / \
+   7   3  17 20
+    \ / \
+   13 2  4
+    /
+   9   
 '''
