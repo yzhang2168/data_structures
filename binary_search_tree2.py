@@ -37,6 +37,25 @@ class BinarySearchTree:
         self.root = None
         self.nodes = []
 
+    def read_for_test(self, n, str_list):
+        if n > 0:
+            for j in range(n):
+                self.nodes.append(Node(None))
+            for i in range(n):
+                a, b, c = map(int, str_list[i].strip().split())
+                self.nodes[i].key = a
+                if b != -1:
+                    self.nodes[i].left = self.nodes[b]
+                    self.nodes[b].parent = self.nodes[i]
+                else:
+                    self.nodes[i].left = None
+                if c != -1:
+                    self.nodes[i].right = self.nodes[c]
+                    self.nodes[c].parent = self.nodes[i]
+                else:
+                    self.nodes[i].right = None
+            self.root = self.nodes[0]
+
     def read_from_console(self):
         n = int(sys.stdin.readline().strip())
         if n > 0:
@@ -72,6 +91,20 @@ class BinarySearchTree:
             self.__in_order_recursion(self.root, result)
         return result
 
+    def in_order_iterative(self):
+        result = []
+        s = []
+        current = self.root
+        while current is not None or len(s) != 0:
+            while current is not None:
+                s.append(current)
+                current = current.left
+            # the last current is None
+            current = s.pop()
+            result.append(current.key)
+            current = current.right
+        return result
+
     def __in_order_reverse_recursion(self, node, result):
         if node is not None:
             self.__in_order_reverse_recursion(node.right, result)
@@ -85,9 +118,16 @@ class BinarySearchTree:
         return result
 
     def __pre_order_recursion(self, node, result):
+        '''
         if node is not None:
             result.append(node.key)
             self.__pre_order_recursion(node.left, result)
+            self.__pre_order_recursion(node.right, result)
+        '''
+        result.append(node.key)
+        if node.left is not None:
+            self.__pre_order_recursion(node.left, result)
+        if node.right is not None:
             self.__pre_order_recursion(node.right, result)
 
     def pre_order_traversal(self):
@@ -97,10 +137,17 @@ class BinarySearchTree:
         return result
 
     def __post_order_recursion(self, node, result):
+        '''
         if node is not None:
             self.__post_order_recursion(node.left, result)
             self.__post_order_recursion(node.right, result)
             result.append(node.key)
+        '''
+        if node.left is not None:
+            self.__post_order_recursion(node.left, result)
+        if node.right is not None:
+            self.__post_order_recursion(node.right, result)
+        result.append(node.key)
 
     def post_order_traversal(self):
         result = []
@@ -114,13 +161,15 @@ class BinarySearchTree:
         elif key < node.key:
             if node.left is not None:
                 return self.__find_recursion(key, node.left)
-            # for a missing key, return the closest node
-            return node
+            else: # down to a leaf already, key is missing
+                # return the closest node
+                return node
         elif key > node.key:
             if node.right is not None:
                 return self.__find_recursion(key, node.right)
-            # for a missing key, return the closest node
-            return node
+            else: # down to a leaf ready, key is missing
+                # for a missing key, return the closest node
+                return node
 
     def find(self, key):
         """
@@ -297,7 +346,7 @@ class BinarySearchTree:
             return node
         elif key == node.key:
             visited[i] = True
-            print('visited', visited)
+            #print('visited', visited)
             return node
         elif key < node.key:
             if node.left is not None:
@@ -318,25 +367,28 @@ class BinarySearchTree:
         for i in range(n):
             if visited[i] is None:
                 if self.__find_BST(self.nodes[i].key, self.root, i, visited) is None:
-                    print(self.nodes[i].key, 'find() returns None')
+                    #print(self.nodes[i].key, 'find() returns None')
                     return False
         return True
-    '''
-    def __is_BST_in_order_recursive(self, node):
+
+    def __is_BST_in_order_util(self, node, prev):
         """
-        uses a global variable
+        prev is mutable, different levels point to the same object
         """
         if node is not None:
-            global prev
-            self.__is_BST_in_order_recursive(node.left)
-            print(node)
-            if prev is None:
-                prev = node.key
-            elif prev is not None and prev < node.key:
-                prev = node.key
-            else:
+            #print('current node', node.key)
+            if self.__is_BST_in_order_util(node.left, prev) is False:
                 return False
-            self.__is_BST_in_order_recursive(node.right)
+            if len(prev) == 0:
+                prev.append(node.key)
+            elif len(prev) != 0 and prev[0] < node.key:
+                prev[0] = node.key
+            else:
+                print('here is the problematic key:', node.key)
+                return False
+            #print('current prev', prev)
+            if self.__is_BST_in_order_util(node.right, prev) is False:
+                return False
         return True
 
     def is_BST_in_order(self):
@@ -347,40 +399,29 @@ class BinarySearchTree:
         if self.root is None:
             return True
         else:
-            global prev
-            prev = None
-            return self.__is_BST_in_order_recursive(self.root)
-
-    def __is_BST_in_order_util(self, node, prev):
-        """
-        prev is a reference to a mutable object
-        changes to the object itself are visible through all references to it
-        local names in call stack are not shared
-        """
-        if node is not None:
-            self.__is_BST_in_order_util(node.left, prev)
-            if not prev:
-                prev.append(node.key)
-            elif prev and prev[0] >= node.key:
-                return False
-            else:
-                prev[0] = node.key
-            self.__is_BST_in_order_util(node.right, prev)
-        return True
-
-    def is_BST_in_order_comparison(self):
-        """
-        no duplicate keys: left < root < right
-        check BST property by checking if in order traversal is in increasing order
-        passes a mutable object to another function
-        all changes made to the mutable object are seen through all references to it
-        """
-        if self.root is None:
-            return True
-        else:
             previous = []
             return self.__is_BST_in_order_util(self.root, previous)
-    '''
+
+    def is_BST_in_order_iterative(self):
+        result = []
+        s = []
+        prev = float('-inf')
+        current = self.root
+        while current is not None or len(s) != 0:
+            while current is not None:
+                s.append(current)
+                current = current.left
+            # the last current is None
+            current = s.pop()
+            result.append(current)
+            if current.key < prev:
+                print('here is the problematic key:', current.key)
+                return False
+            else:
+                prev = current.key
+            current = current.right
+        return True
+
     def __str__(self):
         s = ''
         for node in self.nodes:
@@ -390,37 +431,61 @@ class BinarySearchTree:
 
 if __name__ == '__main__':
     tree = BinarySearchTree()
-    tree.read_from_console()
+    #tree.read_from_console()
+
+    str_list = []
+    str_list.append('15 1 2')
+    #str_list.append('6 3 4')
+    str_list.append('6 4 3')
+    # checking BST property recursive: False
+    # checking BST property search: False
+    # checking BST property in order: True
+    # testing is_BST_in_order_comparison: True
+    str_list.append('18 5 6')
+    str_list.append('3 7 8')
+    str_list.append('7 -1 9')
+    str_list.append('17 -1 -1')
+    str_list.append('20 -1 -1')
+    str_list.append('2 -1 -1')
+    str_list.append('4 -1 -1')
+    str_list.append('13 10 -1')
+    str_list.append('9 -1 -1')
+
+    tree.read_for_test(11, str_list)
+
     #print(tree)
+    print('in order:', tree.in_order_iterative())
     print('\nchecking BST property - recursive:', tree.is_BST_recursive(tree.root))
-    print('nchecking BST property - search nodes:', tree.is_BST_search_nodes())
-    print('checking BST property - in order comparison:', tree.is_BST_in_order())
-    print('checking BST property - in_order_comparison:', tree.is_BST_in_order_comparison())
+    print('checking BST property - search nodes:', tree.is_BST_search_nodes())
+    print('checking BST property - in order iterative comparison:', tree.is_BST_in_order_iterative())
+    print('checking BST property - in order:', tree.is_BST_in_order())
     print('checking BST property - search within range of ancestors', tree.is_BST_min_max())
 
-    print('\nfinding existing key', tree.find(3))
+    print('\nfinding existing key', tree.find(7))
 
     print('\nfinding missing keys')
     print(tree.find(0))
     print(tree.find(3.5))
     print(tree.find(8))
-
+    '''
     print('\ninserting 0, 2.5, 3.5, 7.5')
     #tree.insert(0)
     #tree.insert(2.5)
     #tree.insert(3.5)
     #tree.insert(7.5)
-
+    '''
     print('after insertions')
     print('in order')
     print(tree.in_order_traversal())
+    print('in order iterative')
+    print(tree.in_order_iterative())
     print('in order reverse')
     print(tree.in_order_reverse_traversal())
     print('pre order')
     print(tree.pre_order_traversal())
     print('post order')
     print(tree.post_order_traversal())
-
+    '''
     print('\nmax', tree.max())
     print('max of left subtree', tree.max(tree.root.left))
     print('max recursive', tree.max_recursive(tree.root))
@@ -457,8 +522,7 @@ if __name__ == '__main__':
     print('range_search(0, 100):', tree.range_search(0, 100))
     print('range_search(-30, -10):', tree.range_search(-30, -10))
     print('range_search(30, 100):', tree.range_search(30, 100))
-
-
+    '''
 
 
 '''
