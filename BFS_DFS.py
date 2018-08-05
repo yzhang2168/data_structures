@@ -141,6 +141,7 @@ class Tree:
                 # if a node has been visited, when the same node on the stack is popped off,
                 # it will skip the following steps
                 if node.right is not None:
+                    # right child is pushed first so that left child is processed first
                     s.push(node.right)
                 if node.left is not None:
                     s.push(node.left)
