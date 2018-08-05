@@ -83,6 +83,9 @@ class Tree:
         return leaves
 
     def compute_height_iterative(self):
+        '''
+        not efficient for deep trees
+        '''
         max_height = 0
         for node in self.nodes:
             if not node.children:
@@ -95,6 +98,9 @@ class Tree:
         return max_height
 
     def compute_height_recursive(self):
+        '''
+        not efficient for deep trees
+        '''
         max_height = 0
         deepest_node = None
         for node in self.nodes:
@@ -111,6 +117,9 @@ class Tree:
             return self.compute_height_recursive_helper(node.parent) + 1
 
     def compute_height_dynamic(self):
+        '''
+        efficient for deep trees
+        '''
         max_height = 0
         height = [None] * self.n
         deepest_node = None
@@ -131,6 +140,9 @@ class Tree:
             return self.compute_height_dynamic_helper(node.parent, height) + 1
 
     def compute_height_breadth_first(self):
+        '''
+        efficient for deep trees
+        '''
         if self.empty():
             return 0
         # root node only
@@ -171,8 +183,9 @@ def main():
         print(leaf)
     print('=================')
     print('max height from breadth first traversal:', tree.compute_height_breadth_first())
-    print('max height after scanning all leaves:', tree.compute_height_iterative())
-    print('max height from recursive calls:', tree.compute_height_recursive())
     print('max height from dynamic:', tree.compute_height_dynamic())
+    print('max height after scanning all leaves:', tree.compute_height_iterative()) # Failed case #18/24: time limit exceeded
+    print('max height from recursive calls:', tree.compute_height_recursive()) # Failed case #18/24: time limit exceeded
+
 
 threading.Thread(target=main).start()
