@@ -1,12 +1,14 @@
 #!/usr/bin/python3
 """
 Yun Zhang, yzhxdy@gmail.com
-July 2018
+August 2018
 class for BinarySearchTree, tree may not be balanced
 class for Node: has key and 3 pointers (parent, left child and right child)
 """
-import sys
+import sys, threading
 
+sys.setrecursionlimit(10**7) # max depth of recursion
+threading.stack_size(2**30)  # new thread will get stack of such size
 
 class Node:
     def __init__(self, key, left=None, right=None, parent=None):
@@ -177,7 +179,7 @@ class BinarySearchTree:
         For a missing key, return the closest node
         """
         return self.__find_recursion(key, self.root)
-    '''
+
     def find2(self, key, node):
         # simplified, but requires 2 parameters
         if node is None or node.key == key:
@@ -188,7 +190,7 @@ class BinarySearchTree:
         elif key > node.key:
             if node.right is not None:
                 return self.find2(key, node.right)
-    '''
+
     def max(self, node=None):
         """
         if no argument is provided, set it to root - max of the whole tree
@@ -314,12 +316,10 @@ class BinarySearchTree:
         """
         if node is None:
             return True
-        if node.left is not None:
-            if self.min(node.left) >= node.key:
-                return False
-        if node.right is not None:
-            if self.max(node.right) < node.key:
-                return False
+        if node.left is not None and self.max(node.left) >= node.key:
+            return False
+        if node.right is not None and self.min(node.right) < node.key:
+            return False
         if self.is_BST_recursive(node.left) is False or self.is_BST_recursive(node.right) is False:
             return False
         return True
@@ -327,10 +327,11 @@ class BinarySearchTree:
     def __is_BST_min_max_util(self, node, mini, maxi):
         if node is None:
             return True
-        if node.key < mini or node.key >= maxi:
+        if node.key < mini or node.key > maxi:
             # node.key <= maxi: duplicate key should be the right child, not left child
+            #print('False', node.key, mini, maxi)
             return False
-        return self.__is_BST_min_max_util(node.left, mini, node.key) and \
+        return self.__is_BST_min_max_util(node.left, mini, node.key - 1) and \
                self.__is_BST_min_max_util(node.right, node.key, maxi)
 
     def is_BST_min_max(self):
@@ -372,6 +373,15 @@ class BinarySearchTree:
                     return False
         return True
 
+    def is_BST_search_all_nodes(self):
+        # passed sample tests
+        for i in range(len(self.nodes)):
+            # tree[i][0]: key
+            if self.find2(self.nodes[i].key, self.root) is None:
+                #print('key =', self.nodes[i].key, 'find2() returns None')
+                return False
+        return True
+
     def __is_BST_in_order_util(self, node, prev):
         """
         prev is mutable, different levels point to the same object
@@ -379,16 +389,18 @@ class BinarySearchTree:
         if node is not None:
             #print('current node', node.key)
             if self.__is_BST_in_order_util(node.left, prev) is False:
+                #print('left False')
                 return False
             if len(prev) == 0:
                 prev.append(node.key)
             elif len(prev) != 0 and prev[0] < node.key:
                 prev[0] = node.key
             else:
-                print('here is the problematic key:', node.key)
+                #print('here is the problematic key:', node.key)
                 return False
             #print('current prev', prev)
             if self.__is_BST_in_order_util(node.right, prev) is False:
+                #print('right False')
                 return False
         return True
 
@@ -403,7 +415,35 @@ class BinarySearchTree:
             previous = []
             return self.__is_BST_in_order_util(self.root, previous)
 
+    def is_BST_in_order_new(self):
+        if self.root is None:
+            return True
+        else:
+            bst = [True]
+            previous = []
+            return self.__is_BST_in_order_util2(self.root, bst, previous)
+
+    def __is_BST_in_order_util2(self, node, bst, prev):
+        if bst[0] and node.left is not None:
+            self.__is_BST_in_order_util2(node.left, bst, prev)
+
+        if len(prev) == 0:
+            prev.append(node.key)
+        elif len(prev) != 0 and prev[0] < node.key:
+            prev[0] = node.key
+        else:
+            print('here is the problematic key:', node.key)
+            bst[0] = False
+
+        if bst[0] and node.right is not None:
+            self.__is_BST_in_order_util2(node.right, bst, prev)
+
+
     def is_BST_in_order_iterative(self):
+        """
+        no duplicate keys: left < root < right
+        check BST property by checking if in order traversal is in increasing order
+        """
         result = []
         s = []
         prev = float('-inf')
@@ -416,12 +456,38 @@ class BinarySearchTree:
             current = s.pop()
             result.append(current)
             if current.key < prev:
-                print('here is the problematic key:', current.key)
+                #print('here is the problematic key:', current.key)
                 return False
             else:
                 prev = current.key
             current = current.right
         return True
+
+    def is_BST_in_order_new(self):
+        result = []
+        s = []
+        prev = float('-inf')
+        current = self.root
+        while current is not None:
+            if current.key <= prev:
+                return False
+            s.append(current)
+            current = current.left
+
+        while len(s) != 0:
+            current = s.pop()
+            result.append(current)
+            if current.right is not None:
+                current = current.right
+                while current is not None:
+                    s.append(current)
+                    current = current.left
+
+    def printout(self, bst):
+        if bst is True:
+            print('CORRECT')
+        else:
+            print('INCORRECT')
 
     def __str__(self):
         s = ''
@@ -430,9 +496,9 @@ class BinarySearchTree:
         return s
 
 
-if __name__ == '__main__':
+def main():
     tree = BinarySearchTree()
-    #tree.read_from_console()
+    tree.read_from_console()
 
     str_list = []
     str_list.append('15 1 2')
@@ -452,15 +518,39 @@ if __name__ == '__main__':
     str_list.append('13 10 -1')
     str_list.append('9 -1 -1')
 
-    tree.read_for_test(11, str_list)
+    #tree.read_for_test(11, str_list)
+    str_list2 = []
+    str_list2.append('20 1 2')
+    str_list2.append('10 -1 -1')
+    str_list2.append('30 3 4')
+    str_list2.append('5 -1 -1')
+    str_list2.append('40 -1 -1')
+    #tree.read_for_test(5, str_list2)
 
-    #print(tree)
-    print('in order:', tree.in_order_iterative())
-    print('\nchecking BST property - recursive:', tree.is_BST_recursive(tree.root))
-    print('checking BST property - search nodes:', tree.is_BST_search_nodes())
-    print('checking BST property - in order iterative comparison:', tree.is_BST_in_order_iterative())
-    print('checking BST property - in order:', tree.is_BST_in_order())
-    print('checking BST property - search within range of ancestors', tree.is_BST_min_max())
+    print(tree)
+
+    print('---------no duplicate keys---------')
+    tree.printout(tree.is_BST_in_order_iterative()) # passed; stack memory use the least
+    tree.printout(tree.is_BST_recursive(tree.root)) # passed
+    tree.printout(tree.is_BST_in_order()) # passed
+
+    #tree.printout(tree.is_BST_search_all_nodes()) # Failed case #23/36: time limit exceeded
+    #tree.printout(tree.is_BST_search_nodes()) # Failed case #23/36: time limit exceeded
+
+    print('\n----------with duplicate keys-----------')
+    tree.printout(tree.is_BST_recursive(tree.root)) # Failed case #36/95: Wrong answer
+    tree.printout(tree.is_BST_min_max()) # passed
+
+threading.Thread(target=main).start()
+
+'''
+    Input:
+    4
+    4 1 -1
+    2 2 3
+    1 -1 -1
+    5 -1 -1
+    #tree.printout(tree.is_BST_min_max()) # Failed case #36/95: Wrong answer
 
     print('\nfinding existing key', tree.find(7))
 
@@ -468,13 +558,13 @@ if __name__ == '__main__':
     print(tree.find(0))
     print(tree.find(3.5))
     print(tree.find(8))
-    '''
+    
     print('\ninserting 0, 2.5, 3.5, 7.5')
     #tree.insert(0)
     #tree.insert(2.5)
     #tree.insert(3.5)
     #tree.insert(7.5)
-    '''
+    
     print('after insertions')
     print('in order')
     print(tree.in_order_traversal())
@@ -486,7 +576,7 @@ if __name__ == '__main__':
     print(tree.pre_order_traversal())
     print('post order')
     print(tree.post_order_traversal())
-    '''
+    
     print('\nmax', tree.max())
     print('max of left subtree', tree.max(tree.root.left))
     print('max recursive', tree.max_recursive(tree.root))
@@ -549,19 +639,7 @@ input
   / \   \
  2   4  13
         /
-       9       
-       
-10
-15 1 2
-6 3 4
-18 5 6
-3 -1 7
-7 -1 8
-17 -1 -1
-20 -1 -1
-4 -1 -1
-13 9 -1
-9 -1 -1
+       9      
 
 ----------------
 11
