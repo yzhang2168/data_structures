@@ -5,6 +5,7 @@ import java.util.LinkedList;
 
 /**
  * implement min(), pop(), push(), peek() using stack with time O(1)
+ * use a stack to store elements and a minStack to store current min
  * */
 public class MinStack {
     private Deque<Integer> _stack = null; 
@@ -45,10 +46,10 @@ public class MinStack {
     
     public void push(int x) {
     	_stack.push(x);
-    	if (_minStack.isEmpty()) {
-    		_minStack.push(x);
-    	}
-    	if (x <= _minStack.peek()) {
+    	// stack     [7, 2, 5, 3, 8, 2]
+    	// minStack  [7, 2, 2]
+    	// <= because the stack can have duplicate values, 2 in the above example 
+    	if (_minStack.isEmpty() || x <= _minStack.peek()) {
     		_minStack.push(x);
     	}
     }
