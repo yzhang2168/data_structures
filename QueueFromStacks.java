@@ -6,12 +6,15 @@ import java.util.LinkedList;
  * implement a queue using built-in stack
  * time: offer(): O(1)
  * 		 peek(), poll(): O(1) amortized, O(n) worst case  
- * space: 
+ * space: a data structure that holds data
+ *		  concerned with time for methods, not for data storage space
+ *		  not counting data storage in heap: two stacks expand or shrink as # elements changes
+ * 		  no extra space in heap 		  
  * */
 
 public class QueueFromStacks {
-    private Deque<Integer> _in;
-    private Deque<Integer> _out;
+    private Deque<Integer> _in = null;
+    private Deque<Integer> _out = null;
     
     public QueueFromStacks() {
     	_in = new LinkedList<Integer>();
