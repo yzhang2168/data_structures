@@ -14,7 +14,13 @@ public class ListNode {
     	next = n;
     }
     
-    public static ListNode reverseLinkedList(ListNode head) {
+    /**
+     * Reverse a singly-linked list.
+     * L = null, return null
+     * L = 1 -> null, return 1 -> null
+     * L = 1 -> 2 -> 3 -> null, return 3 -> 2 -> 1 -> null
+     * */
+    public static ListNode reverseIterative(ListNode head) {
     	/**
     	 * time:  O(n)
     	 * space: O(1)
@@ -60,7 +66,7 @@ public class ListNode {
     }
     
     // recursion
-    public static ListNode reverse(ListNode head) {
+    public static ListNode reverseRecursion(ListNode head) {
     	/**
     	 * 1. subproblems: head --> reversed n-1 nodes (returns newhead)
     	 * 2. recursion rule: 
@@ -69,6 +75,9 @@ public class ListNode {
     	 *    head.next = null
     	 *    return new head
     	 * 3. base case: 0/1 node
+    	 * 
+    	 * time:  O(n): O(1) for each node
+    	 * space: O(n), # stack frames: n; heap: no new objects 
     	 * */
     	// base case
     	if (head == null || head.next == null) {
@@ -76,23 +85,10 @@ public class ListNode {
     	}
     	
     	// recursion rule
-    	ListNode newHead = reverse(head.next);
+    	ListNode newHead = reverseRecursion(head.next);
     	
     	ListNode n2 = head.next;
     	n2.next = head;
     	head.next = null;
     	return newHead;
     }
-
-    public static void main(String[] args) {
-    	ListNode node1 = new ListNode(1);
-    	ListNode node2 = new ListNode(2);
-    	ListNode node3 = new ListNode(3);
-    	node1.next = node2;
-    	node2.next = node3;
-    	ListNode head = reverse(node1);
-    	System.out.println(head.value);
-    	System.out.println(head.next.value);
-    	System.out.println(head.next.next.value);
-    }
-}
