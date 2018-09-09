@@ -302,7 +302,25 @@ public class ListNode {
     		return head;
     	}
     	
-    	return head;
+    	ListNode dummy_smaller = new ListNode(-1);
+    	ListNode smaller = dummy_smaller;
+    	ListNode dummy_larger = new ListNode(-1);
+    	ListNode larger = dummy_larger;
+    	ListNode curr = head;
+    	
+    	while (curr != null) {
+    		if (curr.value < target) {
+    			smaller.next = curr;
+    			smaller = smaller.next;
+    		} else {
+    			larger.next = curr;
+    			larger = larger.next;
+    		}
+			curr = curr.next;
+    	}
+    	smaller.next = dummy_larger.next;
+    	larger.next = null; // larger could point to a smaller node, reset to null
+    	return dummy_smaller.next;
     }
 
 }
