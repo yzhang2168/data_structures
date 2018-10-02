@@ -1,5 +1,6 @@
 package data_structures;
 
+
 public class LinkedList {
     /**
      * Generate a linked list of length n where the nodes contains numbers from 0 to n-1 in order.
@@ -25,18 +26,88 @@ public class LinkedList {
      * Given: 1->7->5->4->2->null
      * Answer: 5
      * */
-    public static int countNodes(ListNode head) {
-        int count = 0;
-        ListNode current = head;
-        // corner case
-        if (head == null) {
-        	return 0;
-        }
-        while (current != null) {
-        	count++;
-        	current = current.next;
-        }        	
-        return count;
+    public static int length(ListNode head) {
+        int length = 0;
+    	// pass by value, head is a copy of the original head reference
+    	// this will not change the original head
+        while (head != null) {
+        	length++;
+        	head = head.next;
+        }  
+        // covers corner case: head == null
+        return length;
+    }
+    
+    
+    public static ListNode get(ListNode head, int index) {
+    	// input validation
+    	if (index < 0) {
+    		return null;
+    	}
+    	while (head != null && index > 0) {
+    		head = head.next;
+    		index--;
+    	}
+    	// now head == null or index == 0
+    	// index out of range - return null
+    	return head;
+    }
+    
+    
+    public static ListNode appendHead(ListNode head, int value) {
+    	ListNode newNode = new ListNode(value);
+    	// this covers when head == null
+    	newNode.next = head;
+    	return newNode;
+    }
+    
+    
+    public static ListNode appendTail(ListNode head, int value) {
+    	ListNode newNode = new ListNode(value);
+    	// corner
+    	if (head == null) {
+    		return newNode;
+    	}
+    	ListNode curr = head;
+    	while (curr.next != null) {
+    		curr = curr.next;
+    	}
+    	// now head.next = null
+    	curr.next = newNode;
+    	return head;
+    }
+    
+    /**
+     * remove the node with input value 
+     * assumption: no duplicate values
+     * input: 1 -> 2 -> 3 -> null, value = 2
+     * output: 1 -> 3 -> null
+     * */
+    public static ListNode remove(ListNode head, int value) {
+    	if (head == null) {
+    		return null;
+    	}
+    	// remove head
+    	if (head.value == value) {
+    		ListNode newHead = head.next;
+    		head.next = null;
+    		return newHead;
+    		// return head.next;
+    	}
+    	
+    	ListNode curr = head;
+    	// if remove middle node
+    	while (curr.next != null && curr.next.value != value) {
+    		curr = curr.next;
+    	}
+    	
+    	// now curr.next == null or curr.next.value == value
+    	if (curr.next != null) {
+    		// curr.value = value, covers tail
+        	curr.next = curr.next.next;
+    	}
+    	// covers curr.next == null, not found
+    	return head;
     }
     
     
@@ -132,8 +203,8 @@ public class LinkedList {
     	ListNode s = head;
     	ListNode f = head;
     	// return the 2nd of the 2 middle nodes in case of even number of nodes 
-    	// while(f != null && f.next != null) {
-    	
+    	// while (f != null && f.next != null) {
+
     	// return the 1st of the 2 middle nodes in case of even number of nodes
     	// while (fast.next.next != null && fast.next != null) // wrong!! When fast.next == null, fast.next.next NPE. DRAW A DIAGRAM!
     	while(f.next != null && f.next.next != null) {
@@ -141,7 +212,22 @@ public class LinkedList {
     		f = f.next.next;
     	}
     	return s;
+    }
+    
+    public static ListNode findMiddle2(ListNode head) {
+    	// corner case
+    	if (head == null) {
+    		return head;
     	}
+    	int length = length(head); 
+    	int midIndex = length / 2;
+    	ListNode curr = head;    	
+    	while (midIndex > 0) {
+    		curr = curr.next;
+    	}
+    	// midIndex == 0
+    	return curr;
+    }
     
     
     /**
@@ -175,9 +261,9 @@ public class LinkedList {
     		newNode.next = head;
     		return newNode;
     	}
-    	// target > head: inserting in the middle
-    	// in case of identical values, insert before identical
+    	// target > head: traverse the list until the last node or the node >= target
     	ListNode curr = head;
+    	/**
     	while (curr.next != null) {
     		if (curr.value < target && curr.next.value >= target) {
     			newNode.next = curr.next;
@@ -190,6 +276,13 @@ public class LinkedList {
     	// target > tail: inserting after the tail
 		curr.next = newNode;
     	return head;
+    	*/
+    	while (curr.next != null && curr.next.value < target) {
+    		curr = curr.next;
+    	}
+    	newNode.next = curr.next;
+    	curr.next = newNode;
+    	return head;
     }
 
     
@@ -201,7 +294,6 @@ public class LinkedList {
       		return newNode;
       	}
       	// target > head: inserting in the middle
-      	// in case of identical values, insert before identical
       	ListNode curr = head;
       	ListNode prev = null;
       	while (curr != null) {
@@ -222,12 +314,12 @@ public class LinkedList {
     
     
     /**
-     * merge 2 sorted linked list into one sorted list
+     * merge 2 sorted linked lists into one sorted list
      * L1 = 1 -> 4 -> 6 -> null, L2 = 2 -> 5 -> null, merge L1 and L2 to 1 -> 2 -> 4 -> 5 -> 6 -> null
      * L1 = null, L2 = 1 -> 2 -> null, merge L1 and L2 to 1 -> 2 -> null
      * L1 = null, L2 = null, merge L1 and L2 to null
      * */ 
-    public ListNode merge(ListNode one, ListNode two) {
+    public static ListNode mergeSortedLists(ListNode one, ListNode two) {
     	/**
     	 * without using a dummy node, need to check corner cases
    	
@@ -277,6 +369,42 @@ public class LinkedList {
     	return dummy.next;
     }
     
+    
+    /**
+     * interleave 2 linked list into one list
+     * L1 = 1 -> 4 -> 6 -> 8 -> null, L2 = 2 -> 5 -> null, interleave L1 and L2 to 1 -> 2 -> 4 -> 5 -> 6 -> 8 -> null
+     * L1 = null, L2 = 1 -> 2 -> null, interleave L1 and L2 to 1 -> 2 -> null
+     * L1 = null, L2 = null, interleave L1 and L2 to null
+     * */ 
+    public static ListNode interleaveTwoLists(ListNode one, ListNode two) {
+    	if (one == null) {
+    		return two;
+    	}
+    	
+    	if (two == null) {
+    		return one;
+    	}
+    	
+    	ListNode dummy = new ListNode(0);
+    	ListNode curr = dummy;
+    	while (one != null && two != null) {
+    		curr.next = one;
+    		one = one.next;
+    		curr = curr.next;
+    		curr.next = two;
+    		two = two.next;
+    		curr = curr.next;
+    	}
+    	// if one of them has remaining elements, append the next node 
+    	if (one != null) {
+    		curr.next = one;
+    	} else if (two != null) {
+    		curr.next = two;
+    	}
+    	
+    	return dummy.next;
+    }
+    
     /**
      * Given a linked list and a target value T, partition it such that 
      * all nodes less than T are listed before the nodes larger than or equal to target value T. 
@@ -310,5 +438,205 @@ public class LinkedList {
     	// larger could point to a smaller node, reset to null
     	larger.next = null; 
     	return dummy_smaller.next;
+    }
+    
+    
+    /**
+     * Given a singly-linked list, where each node contains an integer value, sort it in ascending order. 
+     * The merge sort algorithm should be used to solve this problem.
+	Examples
+	null, is sorted to null
+	1 -> null, is sorted to 1 -> null
+	1 -> 2 -> 3 -> null, is sorted to 1 -> 2 -> 3 -> null
+	4 -> 2 -> 6 -> -3 -> 5 -> null, is sorted to -3 -> 2 -> 4 -> 5 -> 6
+     * */
+    public static ListNode mergesort(ListNode head) {
+    	if (head == null || head.next == null) {
+    		return head;
+    	}
+    	
+    	ListNode mid = findMiddle(head);
+    	ListNode leftHead = head;
+    	ListNode rightHead = mid.next;
+    	mid.next = null;
+    	ListNode leftList = mergesort(leftHead);
+    	ListNode rightList = mergesort(rightHead);
+    	ListNode result = mergeSortedLists(leftList, rightList);
+    	return result;
+    }
+    
+    
+    /**
+     * Given a linked list, check whether it is a palindrome.
+     * Examples:
+     * Input:   1 -> 2 -> 3 -> 2 -> 1 -> null
+     * output: true.
+     * Input:   1 -> 2 -> 3 -> null  
+     * output: false.
+     * Requirements: Space complexity must be O(1)
+     * */
+    public static boolean isPalindrome(ListNode head) {
+    	if (head == null || head.next == null) {
+    		return true;
+    	}
+    	ListNode mid = findMiddle(head);
+    	ListNode leftList = head;
+    	ListNode rightList = reverseIterative(mid.next);
+    	mid.next = null;
+    	while (rightList != null) {
+    		if (leftList.value != rightList.value) {
+    			return false;
+    		}	
+    		leftList = leftList.next;
+    		rightList = rightList.next;    		
+    	}
+    	return true;
+    }
+    
+    /**
+     * You are given two linked lists representing two non-negative numbers. 
+     * The digits are stored in reverse order and each of their nodes contain a single digit. 
+     * Add the two numbers and return it as a linked list.  
+     * Input: (2 -> 4 -> 3) + (5 -> 6 -> 4) = 342 + 465 = 807
+     * Output: 7 -> 0 -> 8
+     * */
+    public static ListNode addTwoNumbersI(ListNode one, ListNode two) {
+    	int oneSum = 0;
+    	int twoSum = 0;
+    	int ten = 1;
+    	while (one != null) {
+    		oneSum = oneSum + one.value * ten;
+    		ten = ten * 10;
+    		one = one.next;
+    	}
+    	
+    	//System.out.println("oneSum: " + oneSum);
+    	ten = 1;
+       	while (two != null) {
+    		twoSum = twoSum + two.value * ten;
+    		two = two.next;
+    		ten = ten * 10;
+    	}
+       	
+    	//System.out.println("twoSum: " + twoSum);    	
+    	int sum = oneSum + twoSum;
+    	ListNode dummy = new ListNode(0);
+    	ListNode curr = dummy;
+    	if (sum == 0) {
+    		return dummy;
+    	}
+    	
+    	while (sum != 0) {
+    		int digit = sum % 10;
+    		sum = (sum - digit) / 10;
+    		ListNode node = new ListNode(digit);
+    		curr.next = node;
+    		curr = node;
+    	}
+       	return dummy.next;
+    }
+    
+    /**
+     * Input: (2 -> 4 -> 3) + (5 -> 6 -> 4) 
+     * Output2: 243 + 564 = 807
+     * */
+    public static ListNode addTwoNumbersII(ListNode one, ListNode two) {
+    	int oneSum = 0;
+    	int twoSum = 0;
+    	while (one != null) {
+    		oneSum = oneSum * 10 + one.value;
+    		one = one.next;
+    	}    	
+    	//System.out.println("oneSum: " + oneSum);
+       	while (two != null) {
+    		twoSum = twoSum * 10 + two.value;
+    		two = two.next;
+    	}
+    	//System.out.println("twoSum: " + twoSum);
+    	
+    	int sum = oneSum + twoSum;
+    	ListNode curr = null;
+    	if (sum == 0) {
+    		return new ListNode(0);
+    	}
+    	
+    	while (sum != 0) {
+    		int digit = sum % 10;
+    		sum = (sum - digit) / 10;
+    		ListNode node = new ListNode(digit);
+    		node.next = curr;
+    		curr = node;
+    	}
+       	return curr;
+    }
+    
+    /**
+     * Remove all nodes with target value. 
+     * Input: 2 -> 3 -> 6 -> 4 -> 6 -> null, target = 6
+     * Output: 2 -> 3 -> 4 -> null
+     * head may change - use a dummyhead
+     * */
+    public static ListNode removeAllTargets(ListNode head, int target) {
+    	ListNode dummy = new ListNode(0);
+    	ListNode curr = dummy;
+    	while (head != null) {
+    		if (head.value != target) {
+    			curr.next = head;
+    			curr = head;
+    		}
+    		head = head.next;
+    	}
+    	curr.next = null;
+    	return dummy.next;
+    }
+    
+    /**
+     * Reorder the given singly-linked list N1 -> N2 -> N3 -> N4 -> … -> Nn -> null to be 
+     * N1- > Nn -> N2 -> Nn-1 -> N3 -> Nn-2 -> … -> null
+     * Examples
+     * L = null, is reordered to null
+     * L = 1 -> null, is reordered to 1 -> null
+     * L = 1 -> 2 -> 3 -> 4 -> null, is reordered to 1 -> 4 -> 2 -> 3 -> null
+     * L = 1 -> 2 -> 3 -> null, is reordred to 1 -> 3 -> 2 -> null
+     * */
+    public static ListNode reorder(ListNode head) {
+    	if (head == null || head.next == null) {
+    		return head;
+    	}
+    	ListNode mid = findMiddle(head);
+    	ListNode rightHead = mid.next;
+    	mid.next = null;
+    	ListNode rightReversed = reverseIterative(rightHead);
+    	ListNode newHead = interleaveTwoLists(head, rightReversed);
+    	return newHead;
+    }
+    
+    public static void main(String[] args) {
+		ListNode node0 = null;
+		ListNode node1 = new ListNode(2);
+		ListNode node2 = new ListNode(4);
+		ListNode node3 = new ListNode(3);
+		ListNode node4 = new ListNode(5);
+		ListNode node5 = new ListNode(6);
+		ListNode node6 = new ListNode(1);
+		ListNode node7 = new ListNode(9);
+		node1.next = node2;
+		node2.next = node3;
+		node3.next = node4;
+		node4.next = node5;
+		node5.next = node6;
+		node6.next = node7;
+		//util.Util.printLinkedList(interleaveTwoLists(node0, node0));
+		//util.Util.printLinkedList(interleaveTwoLists(node0, node1));
+		//util.Util.printLinkedList(interleaveTwoLists(node1, node0));
+		//util.Util.printLinkedList(interleaveTwoLists(node1, node4));
+		//util.Util.printLinkedList(interleaveTwoLists(node4, node1));
+		util.Util.printLinkedList(node1);
+		util.Util.printLinkedList(mergesort(node1));
+		//util.Util.printLinkedList(reorder(node1));
+		//util.Util.printLinkedList(addTwoNumbersI(node0, node0));
+		//util.Util.printLinkedList(addTwoNumbersII(node1, node4));
+		//util.Util.printLinkedList(removeAllTargets(node4, 2));
+		//System.out.println(isPalindrome(node1));
     }
 }
