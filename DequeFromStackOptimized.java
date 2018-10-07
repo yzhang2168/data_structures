@@ -30,11 +30,11 @@ public class DequeFromStackOptimized {
 	}
 	
 	public void addLeft(Integer value) {
-		s1.addLast(value);
+		s1.push(value);
 	}
 
 	public void addRight(Integer value) {
-		s2.addLast(value);		
+		s2.push(value);		
 	}
 
 	public Integer removeLeft() {
@@ -42,16 +42,16 @@ public class DequeFromStackOptimized {
 			return null;
 		} else if (s1.isEmpty()) {
 			for (int i = 0; i <= s2.size() / 2; i++) {
-				s3.addLast(s2.removeLast());				
+				s3.push(s2.pop());				
 			}
 			while (!s2.isEmpty()) {
-				s1.addLast(s2.removeLast());
+				s1.push(s2.pop());
 			}
 			while (!s3.isEmpty()) {
-				s2.addLast(s3.removeLast());				
+				s2.push(s3.pop());				
 			}
 		} 
-		return s1.removeLast();
+		return s1.pop();
 	}
 
 	public Integer removeRight() {
@@ -59,16 +59,16 @@ public class DequeFromStackOptimized {
 			return null;
 		} else if (s2.isEmpty()) {
 			for (int i = 0; i <= s1.size() / 2; i++) {
-				s3.addLast(s1.removeLast());				
+				s3.push(s1.pop());				
 			}
 			while (!s1.isEmpty()) {
-				s2.addLast(s1.removeLast());
+				s2.push(s1.pop());
 			}
 			while (!s3.isEmpty()) {
-				s1.addLast(s3.removeLast());				
+				s1.push(s3.pop());				
 			}
 		} 
-		return s2.removeLast();
+		return s2.pop();
 	}
 	
 	public static void main(String[] args) {
@@ -77,13 +77,15 @@ public class DequeFromStackOptimized {
 		deque.addRight(2);
 		deque.addRight(3);
 		deque.addRight(4);
-		//System.out.println(deque);
+		//s2 [1 2 3 4 --> head
 		deque.addLeft(5);
 		deque.addLeft(6);
-		//System.out.println(deque);
+		// head <-- 6 5] s1 
 		deque.removeLeft();
 		deque.removeLeft();
+		// ] s1 s2 [1 2 3 4 --> head 
 		deque.removeLeft();
+		// head <-- 1 2] s1 s2 [3 4 --> head
 		deque.removeLeft();
 		deque.removeLeft();
 	}
