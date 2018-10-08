@@ -9,62 +9,61 @@ import java.util.LinkedList;
  * 		 peek(), pop(): O(1) amortized, O(n) worst case  
  * */
 public class StackFromQueue {
-	private Queue<Integer> _in; // for push()
-	private Queue<Integer> _out; // for pop(), peek()
-	
+	private Queue<Integer> _in; // for push(), pop(), peek()
+	private Queue<Integer> _buffer; // buffer as _in, after pop(), peek(), swap ref with _in
+
 	public StackFromQueue() {
 		_in = new LinkedList<Integer>();
-		_out = new LinkedList<Integer>();
+		_buffer = new LinkedList<Integer>();
 	}
-	
+
 	public boolean isEmpty() {
-		return _in.isEmpty() && _out.isEmpty();
+		return _in.isEmpty() && _buffer.isEmpty();
 	}
-	
+
 	public void push(final int value) {
 		_in.offer(value);
 	}
-	
+
 	public Integer pop() {
 		if (isEmpty()) {
 			return null;
-		} else {
-			if (_in.isEmpty()) { 
-				// swap(_in, _out); // WRONG! pass by value, original _in, _out not changed
-				Queue<Integer> temp = _in;
-				_in = _out;
-				_out = temp;
-			} 
-			Integer temp = null;
-			while (!_in.isEmpty()) {
-				temp = _in.poll();
-				if (_in.peek() != null) {
-					_out.offer(temp);
-				}
+		}			
+		Integer temp = null;
+		while (!_in.isEmpty()) {
+			temp = _in.poll();
+			if (_in.peek() != null) {
+				_buffer.offer(temp);
 			}
-			return temp;
 		}
+
+		// swap(_in, _out); // WRONG! pass by value, original _in, _out not changed
+		Queue<Integer> tempRef = _in;
+		_in = _buffer;
+		_buffer = tempRef;
+
+		return temp;
 	}
-	
+
 	public Integer peek() {
-		if (_in.isEmpty() && _out.isEmpty()) {
+		if (isEmpty()) {
 			return null;
-		} else {
-			if (_in.isEmpty()) { 
-				// swap(_in, _out);
-				Queue<Integer> temp = _in;
-				_in = _out;
-				_out = temp;
-			} 
-			Integer temp = null;
-			while (!_in.isEmpty()) {
-				temp = _in.poll();
-				_out.offer(temp);
-			}
-			return temp;
+		} 
+		
+		Integer temp = null;
+		while (!_in.isEmpty()) {
+			temp = _in.poll();
+			_buffer.offer(temp);
 		}
+
+		// swap(_in, _out); // WRONG! pass by value, original _in, _out not changed
+		Queue<Integer> tempRef = _in;
+		_in = _buffer;
+		_buffer = tempRef;
+
+		return temp;
 	}
-	
+
 	public static void main(String[] args) {
 		StackFromQueue s = new StackFromQueue();
 		System.out.println(s.isEmpty());
@@ -80,8 +79,9 @@ public class StackFromQueue {
 		System.out.println(s.pop());
 		System.out.println(s.peek());
 		System.out.println(s.pop());
+		System.out.println(s.isEmpty());
 		System.out.println(s.pop());
 		System.out.println(s.peek());
-
+		System.out.println(s.isEmpty());
 	}
 }
